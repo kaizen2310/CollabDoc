@@ -29,7 +29,8 @@ const charMetrics = (() => {
 })();
 
 const randomColor = () => '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
-const defaultName = `User-${Math.floor(Math.random() * 1000)}`;
+const uniqueSuffix = globalThis.crypto?.randomUUID?.().slice(0, 8) || Math.floor(Math.random() * 1e9).toString(36);
+const defaultName = `User-${uniqueSuffix}`;
 nameInput.value = defaultName;
 
 let provider;

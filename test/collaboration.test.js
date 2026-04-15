@@ -1,5 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
+const { randomUUID } = require('node:crypto');
 const Y = require('yjs');
 const { WebsocketProvider } = require('y-websocket');
 const WebSocket = require('ws');
@@ -25,7 +26,7 @@ const createClient = (baseUrl, roomName) => {
 test('synchronizes concurrent edits without diverging document state', async () => {
   const instance = await createServer({ port: 0 });
   const baseUrl = `ws://127.0.0.1:${instance.port}/collab`;
-  const room = `room-${Date.now()}-sync`;
+  const room = `room-${randomUUID()}-sync`;
 
   const clientA = createClient(baseUrl, room);
   const clientB = createClient(baseUrl, room);
@@ -53,7 +54,7 @@ test('synchronizes concurrent edits without diverging document state', async () 
 test('broadcasts live cursor awareness between connected collaborators', async () => {
   const instance = await createServer({ port: 0 });
   const baseUrl = `ws://127.0.0.1:${instance.port}/collab`;
-  const room = `room-${Date.now()}-presence`;
+  const room = `room-${randomUUID()}-presence`;
 
   const clientA = createClient(baseUrl, room);
   const clientB = createClient(baseUrl, room);
