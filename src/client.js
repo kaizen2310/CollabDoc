@@ -36,7 +36,7 @@ let provider;
 let ydoc;
 let ytext;
 let applyingRemote = false;
-let unobserveText = () => {};
+let cleanupTextObserver = () => {};
 
 const cursorToCoordinates = (value, cursorIndex) => {
   const safeIndex = Math.max(0, Math.min(cursorIndex, value.length));
@@ -138,23 +138,15 @@ const bindDocumentSync = () => {
 };
 
 const connect = () => {
-  unobserveText();
+  cleanupTextObserver();
   provider?.destroy();
   ydoc?.destroy();
 
   ydoc = new Y.Doc();
   ytext = ydoc.getText('content');
-  const observer = () => {
-    applyingRemote = true;
-    const localCursor = editor.selectionStart;
-    editor.value = ytext.toString();
-    const nextCursor = Math.min(localCursor, editor.value.length);
-    editor.setSelectionRange(nextCursor, nextCursor);
-    applyingRemote = false;
-    renderRemoteCursors();
-  };
+  const observer = () => applyRemoteText();
   ytext.observe(observer);
-  unobserveText = () => ytext?.unobserve(observer);
+  cleanupTextObserver = () => ytext?.unobserve(observer);
 
   const docName = docInput.value.trim() || 'shared-doc';
   const wsOrigin = window.location.origin.replace(/^http/, 'ws') + '/collab';
