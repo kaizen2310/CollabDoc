@@ -28,7 +28,8 @@ const charMetrics = (() => {
   };
 })();
 
-const randomColor = () => '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
+const generateRandomHexColor = () =>
+  '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
 const createUniqueSuffix = () => {
   if (globalThis.crypto?.randomUUID) {
     return globalThis.crypto.randomUUID().slice(0, 8);
@@ -49,7 +50,7 @@ let ytext;
 let applyingRemote = false;
 let cleanupTextObserver = () => {};
 
-const cursorToCoordinates = (value, cursorIndex) => {
+const getCursorCoordinates = (value, cursorIndex) => {
   const safeIndex = Math.max(0, Math.min(cursorIndex, value.length));
   const leftPadding = Number.parseFloat(getComputedStyle(editor).paddingLeft) || 0;
   const topPadding = Number.parseFloat(getComputedStyle(editor).paddingTop) || 0;
@@ -87,7 +88,7 @@ const renderRemoteCursors = () => {
       return;
     }
 
-    const { top, left } = cursorToCoordinates(value, state.cursor.index);
+    const { top, left } = getCursorCoordinates(value, state.cursor.index);
     const cursor = document.createElement('div');
     cursor.className = 'remote-cursor';
     cursor.style.top = `${top}px`;
@@ -207,7 +208,7 @@ const connect = () => {
 
   provider.awareness.setLocalStateField('user', {
     name: nameInput.value.trim() || defaultName,
-    color: randomColor()
+    color: generateRandomHexColor()
   });
 
   provider.awareness.on('change', renderRemoteCursors);
