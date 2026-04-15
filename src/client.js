@@ -29,7 +29,17 @@ const charMetrics = (() => {
 })();
 
 const randomColor = () => '#' + Math.floor(Math.random() * 0xffffff).toString(16).padStart(6, '0');
-const uniqueSuffix = globalThis.crypto?.randomUUID?.().slice(0, 8) || Math.floor(Math.random() * 1e9).toString(36);
+const createUniqueSuffix = () => {
+  if (globalThis.crypto?.randomUUID) {
+    return globalThis.crypto.randomUUID().slice(0, 8);
+  }
+  if (globalThis.crypto?.getRandomValues) {
+    const values = globalThis.crypto.getRandomValues(new Uint32Array(2));
+    return `${values[0].toString(16)}${values[1].toString(16)}`;
+  }
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`;
+};
+const uniqueSuffix = createUniqueSuffix();
 const defaultName = `User-${uniqueSuffix}`;
 nameInput.value = defaultName;
 
@@ -125,15 +135,53 @@ const bindDocumentSync = () => {
     }
 
     const nextValue = editor.value;
+    const previousValue = ytext.toString();
+    if (nextValue === previousValue) {
+      publishLocalCursor();
+      return;
+    }
+
+    let start = 0;
+    while (
+      start < previousValue.length &&
+      start < nextValue.length &&
+      previousValue[start] === nextValue[start]
+    ) {
+      start += 1;
+    }
+
+    let previousEnd = previousValue.length - 1;
+    let nextEnd = nextValue.length - 1;
+    while (
+      previousEnd >= start &&
+      nextEnd >= start &&
+      previousValue[previousEnd] === nextValue[nextEnd]
+    ) {
+      previousEnd -= 1;
+      nextEnd -= 1;
+    }
+
+    const deleteLength = previousEnd - start + 1;
+    const insertText = nextValue.slice(start, nextEnd + 1);
+
     ydoc.transact(() => {
-      ytext.delete(0, ytext.length);
-      ytext.insert(0, nextValue);
+      if (deleteLength > 0) {
+        ytext.delete(start, deleteLength);
+      }
+      if (insertText) {
+        ytext.insert(start, insertText);
+      }
     }, 'local-input');
     publishLocalCursor();
   });
 
-  ['keyup', 'click', 'select', 'focus'].forEach((eventName) => {
+  ['click', 'select', 'focus'].forEach((eventName) => {
     editor.addEventListener(eventName, publishLocalCursor);
+  });
+  document.addEventListener('selectionchange', () => {
+    if (document.activeElement === editor) {
+      publishLocalCursor();
+    }
   });
   editor.addEventListener('scroll', renderRemoteCursors);
 };
