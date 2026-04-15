@@ -1,0 +1,32 @@
+{
+  "name": "collabdoc",
+  "version": "1.0.0",
+  "description": "Real-time collaborative editor with live cursors",
+  "main": "server.js",
+  "scripts": {
+    "build:client": "esbuild src/client.js --bundle --format=iife --platform=browser --outfile=public/client.js",
+    "start": "npm run build:client && node server.js",
+    "test": "node --test --test-force-exit"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kaizen2310/CollabDoc.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/kaizen2310/CollabDoc/issues"
+  },
+  "homepage": "https://github.com/kaizen2310/CollabDoc#readme",
+  "dependencies": {
+    "express": "^5.2.1",
+    "ws": "^8.20.0",
+    "y-websocket": "^1.5.4",
+    "yjs": "^13.6.30"
+  },
+  "devDependencies": {
+    "esbuild": "^0.28.0"
+  }
+}
